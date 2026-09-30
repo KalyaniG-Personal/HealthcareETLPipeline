@@ -1,0 +1,91 @@
+{
+  "feed_name": "member_enrollment",
+  "source_file": "data/raw/members_legacy.csv",
+  "target_table": "members",
+  "natural_key": "member_id",
+  "fields": [
+    {
+      "source": "MBR_ID",
+      "target": "member_id",
+      "type": "string",
+      "transforms": ["strip", "upper"],
+      "required": true,
+      "pattern": "^M[0-9]{6}$"
+    },
+    {
+      "source": "FIRST_NM",
+      "target": "first_name",
+      "type": "string",
+      "transforms": ["strip", "title_case"],
+      "required": true
+    },
+    {
+      "source": "LAST_NM",
+      "target": "last_name",
+      "type": "string",
+      "transforms": ["strip", "title_case"],
+      "required": true
+    },
+    {
+      "source": "DOB",
+      "target": "date_of_birth",
+      "type": "date",
+      "transforms": ["strip"],
+      "required": true,
+      "input_formats": ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%m/%d/%y"],
+      "not_future": true
+    },
+    {
+      "source": "ENROLL_DT",
+      "target": "enrollment_date",
+      "type": "date",
+      "transforms": ["strip"],
+      "required": true,
+      "input_formats": ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%m/%d/%y"],
+      "not_future": true
+    },
+    {
+      "source": "PLAN_CD",
+      "target": "plan_code",
+      "type": "string",
+      "transforms": ["strip", "upper"],
+      "required": true,
+      "allowed_values": ["HMO", "PPO", "DSNP", "MMP"]
+    },
+    {
+      "source": "PREMIUM_AMT",
+      "target": "monthly_premium",
+      "type": "decimal",
+      "transforms": ["strip", "strip_currency"],
+      "required": false,
+      "min": 0,
+      "max": 5000
+    },
+    {
+      "source": "STATUS",
+      "target": "status",
+      "type": "string",
+      "transforms": ["strip", "upper"],
+      "required": true,
+      "value_map": {
+        "A": "ACTIVE",
+        "ACTIVE": "ACTIVE",
+        "T": "TERMINATED",
+        "TERM": "TERMINATED",
+        "TERMINATED": "TERMINATED",
+        "P": "PENDING",
+        "PENDING": "PENDING"
+      },
+      "allowed_values": ["ACTIVE", "TERMINATED", "PENDING"]
+    }
+  ],
+  "record_rules": [
+    {
+      "name": "enrollment_not_before_birth",
+      "description": "Enrollment date must fall on or after date of birth",
+      "type": "date_order",
+      "earlier": "date_of_birth",
+      "later": "enrollment_date"
+    }
+  ]
+}
